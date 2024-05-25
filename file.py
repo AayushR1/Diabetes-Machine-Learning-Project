@@ -241,3 +241,13 @@ for column in numerical_columns:
 # %%
 print(df.head)
 # %%
+
+# Sort the DataFrame by the 'Insulin' column in descending order
+sorted_df = df.sort_values(by='Insulin', ascending=False)
+
+# Display the top rows of the sorted DataFrame to see the highest values of 'Insulin'
+print("Top values of Insulin column:")
+print(sorted_df[['Insulin']].head(80))
+
+
+# %%
