@@ -251,3 +251,30 @@ print(sorted_df[['Insulin']].head(80))
 
 
 # %%
+df = pd.read_csv('diabetes.csv')
+
+# X = df.loc[:, df.columns != 'Outcome'].values
+y = df['Outcome'].values
+
+
+
+columns_to_replace_zeros = ['BloodPressure', 'SkinThickness', 'Insulin', 'BMI', 'Age']
+
+# Replace zero values with NaN in the specified columns
+for column_to_replace_zeros in columns_to_replace_zeros:
+    zero_mask = df[column_to_replace_zeros] == 0
+    df.loc[zero_mask, column_to_replace_zeros] = float('nan')
+
+X = df.values
+
+# Handle missing values (NaN) before applying KNN imputation
+
+imputer = KNNImputer(n_neighbors=5)
+X_imputed = imputer.fit_transform(X)
+
+print(df[columns_to_replace_zeros].head(10))
+print(X_imputed[:10, [2,3,4,5,7]])
+# Check if zero values are replaced
+# print("Imputed DataFrame:")
+# print(df.head())
+# %%
