@@ -32,4 +32,49 @@ def imputing(n_neighbors: int, dataframe: pd.DataFrame)->np.ndarray:
 
     return X_imputed
 
-def clus_detection(epsilon: int, min_samples: int, dataframe: pd.DataFrame)
+def clus_detection(epsilon: int, min_samples: int, dataframe: pd.DataFrame, graph: bool)-> np.ndarray:
+    
+    outliers = []
+    
+    dbscan = DBSCAN(eps=epsilon, min_samples=min_samples)
+
+    numerical_columns = dataframe.drop('Outcome', axis=1).columns
+    for column in numerical_columns:
+    # Extract column data as a NumPy array
+        column_data = dataframe[column].values.reshape(-1, 1)
+    
+    # Instantiate DBSCAN
+        dbscan = DBSCAN(eps=epsilon, min_samples=min_samples)
+    
+    # Fit DBSCAN to the column data
+        dbscan.fit(column_data)
+    
+    # Extract labels and core sample indices
+        labels = dbscan.labels_
+    
+    # Identify outliers
+        outlier_indices = np.where(labels == -1)[0]
+        for idx in outlier_indices:
+            outliers.append([column, idx, column_data[idx][0]])
+    
+    outlier_array = np.array(outliers, dtype=object)
+
+
+
+    if (graph):
+        for column in numerical_columns:
+            plt.figure(figsize=(8, 6))
+    
+            # All points
+            plt.scatter(np.arange(len(column_data)), column_data, c=labels, cmap='viridis')
+        
+            # Highlight outliers
+            plt.scatter(outlier_indices, column_data[outlier_indices], c='red', label='Outliers')
+        
+            plt.title(f'DBSCAN Outlier Detection on {column}')
+            plt.xlabel('Index')
+            plt.ylabel(column)
+            plt.colorbar(label='Cluster Label')
+            plt.legend()
+            plt.show()
+    return outlier_array

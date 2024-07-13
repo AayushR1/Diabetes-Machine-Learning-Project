@@ -20,6 +20,10 @@ from sklearn.impute import KNNImputer
 from sklearn.cluster import DBSCAN
 
 from scipy.stats import shapiro
+from importlib import reload
+
+from modeling import lr_models, rf_model, kn_model
+
 
 #%%
 df = pd.read_csv('diabetes.csv')
@@ -109,7 +113,7 @@ y = df['Outcome']  # Target variable
 
 # Split the data into training and test sets (70% training, 30% test)
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42, stratify=y)
-
+labels = sorted(y.unique())
 # Check the class distribution in training and test sets
 print("Training set class distribution:")
 print(y_train.value_counts(normalize=True))
@@ -120,29 +124,29 @@ print(y_test.value_counts(normalize=True))
 
 scaler = StandardScaler()
 
+lr_models(X_train, X_test, y_train, y_test, labels, True)
+
+
+# classifier_lr = LogisticRegression(max_iter=1000, random_state=42)
+# classifier_kn = KNeighborsClassifier()
+# classifier_rf = RandomForestClassifier()
+
+# classifier_lr.fit(X_train, y_train)
+# classifier_kn.fit(X_train, y_train)
+# classifier_rf.fit(X_train, y_train)
 
 
 
-classifier_lr = LogisticRegression(max_iter=1000, random_state=42)
-classifier_kn = KNeighborsClassifier()
-classifier_rf = RandomForestClassifier()
-
-classifier_lr.fit(X_train, y_train)
-classifier_kn.fit(X_train, y_train)
-classifier_rf.fit(X_train, y_train)
 
 
+# score_lr = classifier_lr.score(X_test, y_test)
+# score_kn = classifier_kn.score(X_test, y_test)
+# score_rf = classifier_rf.score(X_test, y_test)
 
 
-
-score_lr = classifier_lr.score(X_test, y_test)
-score_kn = classifier_kn.score(X_test, y_test)
-score_rf = classifier_rf.score(X_test, y_test)
-
-
-print("Logistic Regression Test Accuracy:", score_lr)
-print("K-Nearest Neighbors Test Accuracy:", score_kn)
-print("Random Forest Test Accuracy:", score_rf)
+# print("Logistic Regression Test Accuracy:", score_lr)
+# print("K-Nearest Neighbors Test Accuracy:", score_kn)
+# print("Random Forest Test Accuracy:", score_rf)
 # %%
 
 #Test for normality
