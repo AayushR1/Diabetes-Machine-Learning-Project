@@ -32,6 +32,25 @@ def imputing(n_neighbors: int, dataframe: pd.DataFrame)->np.ndarray:
 
     return X_imputed
 
+def normality(dataframe: pd.Dataframe, alpha: float) -> bool:
+    numerical_columns = dataframe.drop('Outcome', axis=1).columns
+
+# Perform Shapiro-Wilk test for normality for each numerical column
+    for column in numerical_columns:
+        # Perform Shapiro-Wilk test
+        statistic, p_value = shapiro(df[column])
+    
+        # # Print the results
+        # print(f"Shapiro-Wilk test for column '{column}':")
+        # print(f"Test Statistic: {statistic:.4f}, P-value: {p_value:.4f}")
+    
+        # Interpret the results
+        
+        if p_value > alpha:
+            return True
+        else:
+            return False
+        
 def clus_detection(epsilon: int, min_samples: int, dataframe: pd.DataFrame, graph: bool)-> np.ndarray:
     
     outliers = []

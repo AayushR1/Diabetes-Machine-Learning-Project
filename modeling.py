@@ -58,7 +58,7 @@ def lr_models(X_train: pd.DataFrame, X_test: pd.DataFrame, y_train: pd.Series, y
     
     TN, FP, FN, TP = cm_lr.ravel()
 
-    cm_score = FP + (TP*100)
+    cm_score = FP + (FN*100)
     if score:
         return cm_score
     
@@ -95,7 +95,7 @@ def kn_model(X_train: pd.DataFrame, X_test: pd.DataFrame, y_train: pd.Series, y_
     
     TN, FP, FN, TP = cm_kn.ravel()
 
-    cm_score = FP + (TP*100)
+    cm_score = FP + (FN*100)
     if score:
         return cm_score
     
@@ -128,11 +128,11 @@ def rf_model(X_train: pd.DataFrame, X_test: pd.DataFrame, y_train: pd.Series, y_
 
     TN, FP, FN, TP = cm_rf.ravel()
 
-    cm_score = FP + (TP*100)
+    cm_score = FP + (FN*100)
     if score:
         return cm_score
     
-def plot_confusion_matrix(cm, labels: list, title='Confusion Matrix', cmap= "Blues"):
+def plot_confusion_matrix(cm, labels: list, title='Confusion Matrix', cmap= "Greens"):
     """
     Plots a confusion matrix using seaborn heatmap.
 
@@ -146,7 +146,7 @@ def plot_confusion_matrix(cm, labels: list, title='Confusion Matrix', cmap= "Blu
     None
     """
     plt.figure(figsize=(10, 7))
-    print(cmap)
+
     sns.heatmap(cm, annot=True, fmt='d', cmap=cmap, xticklabels=labels, yticklabels=labels)
     plt.title(title)
     plt.xlabel('Predicted Labels')
