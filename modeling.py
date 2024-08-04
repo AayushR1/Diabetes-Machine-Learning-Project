@@ -19,8 +19,20 @@ from sklearn.cluster import DBSCAN
 
 from scipy.stats import shapiro
 
-from sklearn.metrics import confusion_matrix
+from sklearn.metrics import confusion_matrix, make_scorer
 
+from sklearn.model_selection import cross_val_score, StratifiedKFold
+
+
+def loss_function (y_true: pd.DataFrame, y_pred: pd.DataFrame) -> int:
+    cm = confusion_matrix(y_true, y_pred)
+    fp = cm[0, 1]
+    fn = cm[1, 0]
+    print("False Positive", fp)
+    print("false Neg", fn)
+    return fp + 100 * fn
+
+custom_scorer = make_scorer(loss_function, greater_is_better=True)
 
 def lr_models(X_train: pd.DataFrame, X_test: pd.DataFrame, y_train: pd.Series, y_test:pd.Series, labels: list, score: bool)-> int:
     """
@@ -62,6 +74,11 @@ def lr_models(X_train: pd.DataFrame, X_test: pd.DataFrame, y_train: pd.Series, y
     if score:
         return cm_score
     
+
+
+
+
+
 def kn_model(X_train: pd.DataFrame, X_test: pd.DataFrame, y_train: pd.Series, y_test: pd.Series, labels: list, score: bool)-> int:
     """
     Train and evaluate K-Nearest Neighbors model, and plot confusion matrix.
@@ -100,7 +117,28 @@ def kn_model(X_train: pd.DataFrame, X_test: pd.DataFrame, y_train: pd.Series, y_
         return cm_score
     
 
+
+def knn_fold(min_range: int, max_range: int, strat_num: int, X: np.ndarray, y: pd.Series):
+
+    k_values = range(min_range,  max_range)
+
+    results = []
+
+    for k in k_values:
+        knn = KNeighborsClassifier(n_neighbors=k)
+        cv = StratifiedKFold(n_splits=strat_num, shuffle=True, random_state=10)
+        scores = cross_val_score(knn, X, y, cv=cv, scoring= custom_scorer)
+        results.append((k, scores.mean()))
+    
+    results_dataframe = pd.DataFrame(results, columns=['k', 'loss'])
+
+    best_k = results_dataframe.loc[results_dataframe['loss'].idxmin()]
+
+    return best_k, best_k['loss']
+    
+
 def rf_model(X_train: pd.DataFrame, X_test: pd.DataFrame, y_train: pd.Series, y_test: pd.Series, labels: list, score: bool)-> int:
+
     """
     Train and evaluate Random Forest model, and plot confusion matrix with counts.
     
@@ -132,6 +170,29 @@ def rf_model(X_train: pd.DataFrame, X_test: pd.DataFrame, y_train: pd.Series, y_
     if score:
         return cm_score
     
+
+def rf_fold(min_range_ne: int, max_range_ne: int, min_range_md: int, max_range_md: int, strat_num: int, X: pd.DataFrame, y: pd.Series):
+    n_estimators_values = range(min_range_ne, max_range_ne, 10)
+    max_depth_values = range(min_range_md, max_range_md)
+
+    results = []
+
+    for n_estimators in n_estimators_values:
+        for max_depth in max_depth_values:
+            rf = RandomForestClassifier(n_estimators=n_estimators, max_depth=max_depth, random_state=42)
+            print(rf);
+            cv = StratifiedKFold(n_splits=strat_num, shuffle=True, random_state=42)
+            scores = cross_val_score(rf, X, y, cv=cv, scoring=custom_scorer)
+            print(scores.mean())
+            results.append((n_estimators, max_depth, scores.mean()))
+
+    results_dataframe = pd.DataFrame(results, columns=['n_estimators', 'max_depth', 'loss'])
+
+    best_ne_md = results_dataframe.loc[results_dataframe['loss'].idxmin()]
+
+    return best_ne_md['n_estimators'], best_ne_md['max_depth'], best_ne_md['loss']
+
+
 def plot_confusion_matrix(cm, labels: list, title='Confusion Matrix', cmap= "Greens"):
     """
     Plots a confusion matrix using seaborn heatmap.
