@@ -19,17 +19,14 @@ from sklearn.cluster import DBSCAN
 
 from scipy.stats import shapiro
 
-from sklearn.metrics import confusion_matrix, make_scorer
+from sklearn.metrics import confusion_matrix, make_scorer, accuracy_score, classification_report
 
-from sklearn.model_selection import cross_val_score, StratifiedKFold
-
+from sklearn.model_selection import cross_val_score, StratifiedKFold, cross_val_predict, KFold
 
 def loss_function (y_true: pd.DataFrame, y_pred: pd.DataFrame) -> int:
     cm = confusion_matrix(y_true, y_pred)
     fp = cm[0, 1]
     fn = cm[1, 0]
-    print("False Positive", fp)
-    print("false Neg", fn)
     return fp + 100 * fn
 
 custom_scorer = make_scorer(loss_function, greater_is_better=True)
@@ -177,20 +174,68 @@ def rf_fold(min_range_ne: int, max_range_ne: int, min_range_md: int, max_range_m
 
     results = []
 
-    for n_estimators in n_estimators_values:
-        for max_depth in max_depth_values:
-            rf = RandomForestClassifier(n_estimators=n_estimators, max_depth=max_depth, random_state=42)
-            print(rf);
+    for n_estimator in n_estimators_values:
+        for max_dept in max_depth_values:
+            rf = RandomForestClassifier(n_estimators=n_estimator, max_depth=max_dept, random_state=42)
             cv = StratifiedKFold(n_splits=strat_num, shuffle=True, random_state=42)
             scores = cross_val_score(rf, X, y, cv=cv, scoring=custom_scorer)
             print(scores.mean())
-            results.append((n_estimators, max_depth, scores.mean()))
+            results.append((n_estimator, max_dept, scores.mean()))
+            predictions = cross_val_predict(rf, X, y, cv=cv, method='predict')
+
+            accuracy = accuracy_score(y, predictions)
+            print("Accuracy:", accuracy)
+
+    # Detailed classification report
+            report = classification_report(y, predictions)
+            print("Classification Report:\n", report)
 
     results_dataframe = pd.DataFrame(results, columns=['n_estimators', 'max_depth', 'loss'])
 
     best_ne_md = results_dataframe.loc[results_dataframe['loss'].idxmin()]
 
-    return best_ne_md['n_estimators'], best_ne_md['max_depth'], best_ne_md['loss']
+
+    for n_estimator in n_estimators_values:
+        for max_dept in max_depth_values:
+            rf = RandomForestClassifier(n_estimators=n_estimator, max_depth=max_dept, random_state=42)
+            cv = StratifiedKFold(n_splits=strat_num, shuffle=True, random_state=42)
+
+            # Custom cross-validation loop to inspect one fold
+            fold_predictions = []
+            fold_true_labels = []
+
+            for fold, (train_index, test_index) in enumerate(cv.split(X, y)):
+                X_train, X_test = X.iloc[train_index], X.iloc[test_index]
+                y_train, y_test = y.iloc[train_index], y.iloc[test_index]
+                
+                rf.fit(X_train, y_train)
+                fold_pred = rf.predict(X_test)
+
+                # Store predictions and true labels for this fold
+                fold_predictions.append(fold_pred)
+                fold_true_labels.append(y_test)
+
+                # Print the predictions and true labels for the current fold
+                print(f"Fold {fold+1} Predictions: {fold_pred}")
+                print(f"Fold {fold+1} True Labels: {y_test.values}")
+
+                # Optionally, compute and print accuracy and classification report for this fold
+                accuracy = accuracy_score(y_test, fold_pred)
+                print(f"Fold {fold+1} Accuracy: {accuracy}")
+
+                report = classification_report(y_test, fold_pred)
+                print(f"Fold {fold+1} Classification Report:\n{report}")
+
+            # Collect results using cross_val_predict (if needed for comparison)
+            predictions = cross_val_predict(rf, X, y, cv=cv, method='predict')
+            accuracy = accuracy_score(y, predictions)
+            print(f"Overall Accuracy: {accuracy}")
+
+            report = classification_report(y, predictions)
+            print(f"Overall Classification Report:\n{report}")
+
+    
+    # return best_ne_md['n_estimators'], best_ne_md['max_depth'], best_ne_md['loss']
 
 
 def plot_confusion_matrix(cm, labels: list, title='Confusion Matrix', cmap= "Greens"):

@@ -81,15 +81,14 @@ print(y_test.value_counts(normalize=True))
 
 best_k, test_loss_kn = knn_fold(1, 30, 10, imputed_df, y_real)
 
-# best_ne, best_md, test_loss_rf = 
-# rf_fold(50, 100, 10, 50, 10, imputed_df, y_real)
+best_ne, best_md, test_loss_rf = rf_fold(50, 100, 10, 50, 10, imputed_df, y_real)
 
 
-# print("Best k for KNN:", best_k)
-# print("Test loss for KNN:", test_loss_kn)
-# print("Best number of estimators for RF:", best_ne)
-# print("Best max depth for RF:", best_md)
-# print("Test loss for RF:", test_loss_rf)
+print("Best k for KNN:", best_k)
+print("Test loss for KNN:", test_loss_kn)
+print("Best number of estimators for RF:", best_ne)
+print("Best max depth for RF:", best_md)
+print("Test loss for RF:", test_loss_rf)
 
 
 
