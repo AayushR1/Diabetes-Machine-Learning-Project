@@ -22,19 +22,19 @@ from sklearn.cluster import DBSCAN
 from scipy.stats import shapiro
 from importlib import reload
 
-from modeling import lr_models, rf_model, kn_model
+from modeling import lr_models, rf_model, kn_model, knn_fold, rf_fold
 
 from preprocessing import clus_detection, imputing, normality
 
 #%%
 df = pd.read_csv('diabetes.csv')
 
-x = df['BloodPressure']
-y = df['DiabetesPedigreeFunction']
+x_real = df.drop('Outcome', axis=1)
+y_real = df['Outcome']
 
 #%%
 # Imputer Function
-imputing(5, df)
+imputed_df = imputing(5, df)
 
 # %%
 # Load the dataset
@@ -72,13 +72,27 @@ print("\nTest set class distribution:")
 print(y_test.value_counts(normalize=True))
 # %%
 
-scaler = StandardScaler()
 
-lr_models(X_train, X_test, y_train, y_test, labels, True)
+# lr_models(X_train, X_test, y_train, y_test, labels, True)
 
-rf_model(X_train, X_test, y_train, y_test, labels, True)
+# rf_model(X_train, X_test, y_train, y_test, labels, True)
 
-kn_model(X_train, X_test, y_train, y_test, labels, True)
+# kn_model(X_train, X_test, y_train, y_test, labels, True)
+
+best_k, test_loss_kn = knn_fold(1, 30, 10, imputed_df, y_real)
+
+best_ne, best_md, test_loss_rf = rf_fold(50, 100, 10, 50, 10, imputed_df, y_real)
+
+
+print("Best k for KNN:", best_k)
+print("Test loss for KNN:", test_loss_kn)
+print("Best number of estimators for RF:", best_ne)
+print("Best max depth for RF:", best_md)
+print("Test loss for RF:", test_loss_rf)
+
+
+
+
 
 # %%
 #Test for normality

@@ -32,7 +32,7 @@ def imputing(n_neighbors: int, dataframe: pd.DataFrame)->np.ndarray:
 
     return X_imputed
 
-def normality(dataframe: pd.Dataframe, alpha: float) -> bool:
+def normality(dataframe: pd.DataFrame, alpha: float) -> bool:
     numerical_columns = dataframe.drop('Outcome', axis=1).columns
 
 # Perform Shapiro-Wilk test for normality for each numerical column
