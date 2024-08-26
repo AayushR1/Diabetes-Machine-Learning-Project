@@ -29,9 +29,9 @@ def loss_function (y_true: pd.DataFrame, y_pred: pd.DataFrame) -> int:
     fn = cm[1, 0]
     return fp + 100 * fn
 
-custom_scorer = make_scorer(loss_function, greater_is_better=True)
+custom_scorer = make_scorer(loss_function, greater_is_better=False)
 
-def lr_models(X_train: pd.DataFrame, X_test: pd.DataFrame, y_train: pd.Series, y_test:pd.Series, labels: list, score: bool)-> int:
+def lr_models(X: pd.DataFrame, y: pd.Series)-> int:
     """
     Train and evaluate Logistic Regression, K-Nearest Neighbors, and Random Forest models, and plot confusion matrices.
     
@@ -46,32 +46,35 @@ def lr_models(X_train: pd.DataFrame, X_test: pd.DataFrame, y_train: pd.Series, y
     # Initialize models
     classifier_lr = LogisticRegression(max_iter=1000, random_state=42)
  
+    cv = StratifiedKFold(n_splits=10, shuffle=True, random_state=10)
+    scores = cross_val_score(classifier_lr, X, y, cv=cv, scoring= custom_scorer)
 
     # Fit models
-    classifier_lr.fit(X_train, y_train)
+    # classifier_lr.fit(X_train, y_train)
 
 
     # Predict
-    y_pred_lr = classifier_lr.predict(X_test)
+    # y_pred_lr = classifier_lr.predict(X_test)
 
-    # Calculate accuracy scores
-    score_lr = classifier_lr.score(X_test, y_test)
+    # # Calculate accuracy scores
+    # score_lr = classifier_lr.score(X_test, y_test)
 
     
     # Compute confusion matrices
-    cm_lr = confusion_matrix(y_test, y_pred_lr, labels=labels)
+    # cm_lr = confusion_matrix(y_test, y_pred_lr, labels=labels)
 
 
     # Plot confusion matrices
-    plot_confusion_matrix(cm_lr, labels, title='Confusion Matrix: Logistic Regression')
+    # plot_confusion_matrix(cm_lr, labels, title='Confusion Matrix: Logistic Regression')
     
-    TN, FP, FN, TP = cm_lr.ravel()
+    # TN, FP, FN, TP = cm_lr.ravel()
 
-    cm_score = FP + (FN*100)
-    if score:
-        return cm_score
+    # cm_score = FP + (FN*100)
+    # if score:
+    #     return cm_score
     
 
+    return(scores)
 
 
 
